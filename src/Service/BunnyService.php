@@ -24,8 +24,7 @@ class BunnyService
         private CacheInterface               $cache,
         private readonly HttpClientInterface $httpClient,
         private ?BunnyHttpClient             $bunnyClient = null,
-//        private ?BunnyHttpClient $bunnyClient = null,
-        private ?BunnyHttpClient             $baseApi = null,
+        private ?BunnyHttpClient           $baseApi = null,
         private int                          $cacheTimeout = 0,
         private array                        $config = [], // comes from config/packages/survos_bunny.yaml
         //        private ?string $apiKey = null,
@@ -39,7 +38,7 @@ class BunnyService
         $timeout = 60*60*15; // 15 hours?
 // Create a BunnyClient using any HTTP client implementing "Psr\Http\Client\ClientInterface".
         $this->bunnyClient = new BunnyHttpClient(
-            client: (new Psr18Client(client: $this->httpClient))->withOptions([
+            client: new Psr18Client(client: $this->httpClient)->withOptions([
                 'timeout' => $timeout
                 ]
             ),
