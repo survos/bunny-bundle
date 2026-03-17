@@ -13,7 +13,7 @@
         "symfony/dependency-injection": "^7.3||^8.0",
         "symfony/http-kernel": "^7.3||^8.0",
         "twig/twig": "^3.4",
-        "toshy/bunnynet-php": "^7.5||^8.0",
+        "toshy/bunnynet-php": "^8.0|^9.0",
         "zenstruck/bytes": "^1.0",
         "symfony/console": "^7.3||^8.0",
         "symfony/http-client-contracts": "^3.6"
@@ -28,7 +28,7 @@
         "survos/simple-datatables-bundle": "^2.0",
         "symfony/yaml": "^7.3||^8.0",
         "symfony/http-client": "^7.3||^8.0",
-        "phpunit/phpunit": "^12",
+        "phpunit/phpunit": "^13.0",
         "knplabs/knp-time-bundle": "^2.4"
     },
     "autoload": {
