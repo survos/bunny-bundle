@@ -19,9 +19,14 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\HttpKernel\Bundle\AbstractBundle;
+use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
 
 class SurvosBunnyBundle extends AbstractBundle
 {
+    public function configureRoutes(RoutingConfigurator $routes): void
+    {
+        $routes->import(dirname(__DIR__) . '/src/Controller/', 'attribute');
+    }
 
     public function loadExtension(array $config, ContainerConfigurator $container, ContainerBuilder $builder): void
     {
