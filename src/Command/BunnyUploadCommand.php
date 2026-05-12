@@ -25,7 +25,7 @@ bin/console bunny:upload local/path/filename.zip remote/path/
 
 remote path is required unless a mirror of local
 END)]
-final class BunnyUploadCommand extends Command
+final class BunnyUploadCommand
 {
 
     public function __construct(
@@ -33,7 +33,6 @@ final class BunnyUploadCommand extends Command
         private readonly BunnyService                      $bunnyService,
     )
     {
-        parent::__construct();
     }
 
     /**
@@ -50,12 +49,12 @@ final class BunnyUploadCommand extends Command
     {
         if (!file_exists($filename)) {
             $io->error("File $filename does not exist");
-            return self::FAILURE;
+            return Command::FAILURE;
         }
 
         if (!$zip && is_dir($filename)) {
             $io->error("Please specify --zip for directories");
-            return self::FAILURE;
+            return Command::FAILURE;
         }
 
         if ($zip) {
@@ -117,7 +116,7 @@ final class BunnyUploadCommand extends Command
         // @todo: download dir default, etc.
 
         $io->success(self::class . ' finished');
-        return self::SUCCESS;
+        return Command::SUCCESS;
     }
 
     /**
