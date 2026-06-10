@@ -7,7 +7,7 @@ use Symfony\Bridge\Twig\Attribute\Template;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use ToshY\BunnyNet\Model\Api\Base\StorageZone\ListStorageZones;
+use ToshY\BunnyNet\Model\Api\Core\StorageZone\ListStorageZones;
 use ToshY\BunnyNet\Model\Api\EdgeStorage\BrowseFiles\ListFiles;
 
 class BunnyController extends AbstractController

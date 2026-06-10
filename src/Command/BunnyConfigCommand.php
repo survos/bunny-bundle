@@ -14,7 +14,7 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\String\Slugger\AsciiSlugger;
 use Symfony\Component\Yaml\Yaml;
-use ToshY\BunnyNet\Model\Api\Base\StorageZone\ListStorageZones;
+use ToshY\BunnyNet\Model\Api\Core\StorageZone\ListStorageZones;
 use function Symfony\Component\String\u;
 
 #[AsCommand('bunny:config', 'Configure your application with the bunny keys')]

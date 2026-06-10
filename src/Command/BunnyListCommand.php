@@ -10,7 +10,7 @@ use Symfony\Component\Console\Attribute\Option;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use ToshY\BunnyNet\Model\Api\Base\StorageZone\ListStorageZones;
+use ToshY\BunnyNet\Model\Api\Core\StorageZone\ListStorageZones;
 use ToshY\BunnyNet\Model\Api\EdgeStorage\BrowseFiles\ListFiles;
 use Zenstruck\Bytes;
 
