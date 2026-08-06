@@ -12,7 +12,7 @@
         "symfony/config": "^8.1",
         "symfony/dependency-injection": "^8.1",
         "symfony/http-kernel": "^8.1",
-        "twig/twig": "^3.4",
+        "twig/twig": "^3.4|^4.0",
         "toshy/bunnynet-php": "^8.0|^9.0",
         "zenstruck/bytes": "^1.0",
         "symfony/console": "^8.1",
