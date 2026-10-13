@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Survos\BunnyBundle\Controller;
 
 use Survos\BunnyBundle\Service\BunnyService;
@@ -14,53 +16,51 @@ class BunnyController extends AbstractController
 {
     public function __construct(
         private BunnyService $bunnyService,
-        private $simpleDatatablesInstalled = false
-    )
-    {
-
+        private $simpleDatatablesInstalled = false,
+    ) {
     }
 
     private function checkSimpleDatatablesInstalled()
     {
-        if (! $this->simpleDatatablesInstalled) {
+        if (!$this->simpleDatatablesInstalled) {
             throw new \LogicException("This page requires SimpleDatatables\n composer req survos/simple-datatables-bundle");
         }
     }
+
     #[Route('/zones', name: 'survos_bunny_zones', methods: ['GET'])]
     #[Template('@SurvosBunny/zones.html.twig')]
     public function zones(
-    ): Response|array
-    {
+    ): Response|array {
         $this->checkSimpleDatatablesInstalled();
         $baseApi = $this->bunnyService->getBaseApi();
+
         return ['zones' => $baseApi->request(new ListStorageZones())->getContents()];
     }
 
-    #[Route('/{zoneName}}/{path}/{fileName}', name: 'survos_bunny_download', methods: ['GET'], requirements: ['path'=> ".+"])]
+    #[Route('/{zoneName}}/{path}/{fileName}', name: 'survos_bunny_download', methods: ['GET'], requirements: ['path' => '.+'])]
     #[Template('@SurvosBunny/zone.html.twig')]
     public function download(string $zoneName, string $path, string $fileName): Response
     {
+        $response = $this->bunnyService->downloadFile($fileName, $path, $zoneName);
 
-        $response = $this->bunnyService->downloadFile($fileName,$path,$zoneName);
         return new Response($response->getContents()); // eh
     }
-
 
     #[Route('/{zoneName}/{id}/{path}', name: 'survos_bunny_zone', methods: ['GET'])]
     #[Template('@SurvosBunny/zone.html.twig')]
     public function zone(
         string $zoneName,
         string $id,
-        ?string $path='/'
-    ): Response|array
-    {
+        ?string $path = '/',
+    ): Response|array {
         $this->checkSimpleDatatablesInstalled();
         $edgeStorageApi = $this->bunnyService->getEdgeApi($zoneName);
         $list = $edgeStorageApi->request(new ListFiles($zoneName, $path));
+
         return [
             'zoneName' => $zoneName,
             'path' => $path,
-            'files' => $list->getContents()
+            'files' => $list->getContents(),
         ];
     }
 }

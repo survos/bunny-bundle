@@ -1,8 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Survos\BunnyBundle\Command;
 
-use Exception;
 use Survos\BunnyBundle\Service\BunnyService;
 use Symfony\Component\Console\Attribute\Argument;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -12,7 +13,6 @@ use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
-use ZipArchive;
 
 #[AsCommand('bunny:download', 'download remote bunny files or directories', help: <<<END
 # Download a single file to data/composer.json 
@@ -40,7 +40,7 @@ final class BunnyDownloadCommand
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     public function __invoke(
         SymfonyStyle $io,
@@ -51,8 +51,9 @@ final class BunnyDownloadCommand
         #[Option('sync entire directory recursively')] bool $sync = false,
         #[Option('download even if file exists')] bool $force = false,
     ): int {
-        if ($unzip && pathinfo($remoteFilename, PATHINFO_EXTENSION) !== 'zip') {
-            $io->error("Only zip files are supported for --unzip");
+        if ($unzip && 'zip' !== pathinfo($remoteFilename, PATHINFO_EXTENSION)) {
+            $io->error('Only zip files are supported for --unzip');
+
             return Command::FAILURE;
         }
 
@@ -69,7 +70,7 @@ final class BunnyDownloadCommand
         ?string $localDirOrFilename,
         ?string $zoneName,
         bool $unzip,
-        bool $force
+        bool $force,
     ): int {
         $shortDownloadFilename = pathinfo($remoteFilename, PATHINFO_BASENAME);
         $downloadDir = $this->sanitizeLocalDir($remoteFilename, $localDirOrFilename);
@@ -81,18 +82,19 @@ final class BunnyDownloadCommand
         $filename = (pathinfo($localDirOrFilename, PATHINFO_EXTENSION)) ? basename($localDirOrFilename) : null;
 
         if (!is_dir($downloadDir)) {
-            $io->info("Creating " . $downloadDir);
+            $io->info('Creating '.$downloadDir);
             mkdir($downloadDir, 0777, true);
         }
 
         $downloadPath = $filename
-            ? $downloadDir . $filename
-            : $downloadDir . $shortDownloadFilename;
+            ? $downloadDir.$filename
+            : $downloadDir.$shortDownloadFilename;
 
         $downloadPath = $this->clearDirPath($downloadPath);
 
         if (!$force && file_exists($downloadPath)) {
-            $io->success("File already exists: " . realpath($downloadPath));
+            $io->success('File already exists: '.realpath($downloadPath));
+
             return Command::SUCCESS;
         }
 
@@ -110,7 +112,7 @@ final class BunnyDownloadCommand
             path: $remotePath,
             onProgress: function (int $dlNow, int $dlSize, array $info) use ($io, &$progressBar, &$lastUpdate): void {
                 // Initialize progress bar when we know the total size
-                if ($progressBar === null && $dlSize > 0) {
+                if (null === $progressBar && $dlSize > 0) {
                     $progressBar = new ProgressBar($io, $dlSize);
                     $progressBar->setFormat(
                         ' %current_mb%/%max_mb% MB [%bar%] %percent:3s%% %elapsed:6s%/%estimated:-6s% %speed%'
@@ -137,7 +139,7 @@ final class BunnyDownloadCommand
                 }
 
                 // Show indeterminate progress if size unknown
-                if ($progressBar === null && $dlNow > 0) {
+                if (null === $progressBar && $dlNow > 0) {
                     $io->write(sprintf("\r  Downloaded: %s", $this->formatMB($dlNow)));
                 }
             },
@@ -151,17 +153,17 @@ final class BunnyDownloadCommand
         $io->newLine(2);
 
         $size = filesize($downloadPath);
-        $io->success(sprintf("Downloaded %s (%s)", realpath($downloadPath), $this->formatMB($size)));
+        $io->success(sprintf('Downloaded %s (%s)', realpath($downloadPath), $this->formatMB($size)));
 
         if ($unzip) {
-            $dir = $downloadDir . pathinfo($downloadPath, PATHINFO_FILENAME);
+            $dir = $downloadDir.pathinfo($downloadPath, PATHINFO_FILENAME);
             $io->info("Unzipping to $dir");
             $this->unzip($downloadPath, $dir, $io);
 
             $table = new Table($io);
             $table->setStyle('compact');
             $table->setHeaders(['name', 'size']);
-            foreach (glob($dir . '/*') as $file) {
+            foreach (glob($dir.'/*') as $file) {
                 $table->addRow([basename($file), $this->formatMB(filesize($file))]);
             }
             $table->render();
@@ -175,9 +177,9 @@ final class BunnyDownloadCommand
         string $remotePath,
         ?string $localPath,
         ?string $zoneName,
-        bool $force
+        bool $force,
     ): int {
-        $localPath = $localPath ?: $this->projectDir . '/' . trim($remotePath, '/');
+        $localPath = $localPath ?: $this->projectDir.'/'.trim($remotePath, '/');
 
         if (!is_dir($localPath)) {
             mkdir($localPath, 0777, true);
@@ -194,7 +196,7 @@ final class BunnyDownloadCommand
                 remotePath: $remotePath,
                 localPath: $localPath,
                 onFileProgress: function (int $dlNow, int $dlSize, array $info) use ($io, &$fileProgressBar, &$lastUpdate): void {
-                    if ($fileProgressBar === null && $dlSize > 0) {
+                    if (null === $fileProgressBar && $dlSize > 0) {
                         $fileProgressBar = new ProgressBar($io, $dlSize);
                         $fileProgressBar->setFormat('    [%bar%] %percent:3s%% %current_mb%/%max_mb% MB');
                         $fileProgressBar->setMessage('0', 'current_mb');
@@ -228,11 +230,12 @@ final class BunnyDownloadCommand
             }
 
             $io->newLine();
-            $io->success(sprintf("Synced %d files to %s", count($downloaded), realpath($localPath)));
+            $io->success(sprintf('Synced %d files to %s', count($downloaded), realpath($localPath)));
 
             return Command::SUCCESS;
-        } catch (Exception $e) {
-            $io->error("Sync failed: " . $e->getMessage());
+        } catch (\Exception $e) {
+            $io->error('Sync failed: '.$e->getMessage());
+
             return Command::FAILURE;
         }
     }
@@ -240,33 +243,35 @@ final class BunnyDownloadCommand
     private function formatMB(int $bytes): string
     {
         if ($bytes < 1024) {
-            return $bytes . ' B';
+            return $bytes.' B';
         }
         if ($bytes < 1024 * 1024) {
-            return round($bytes / 1024, 1) . ' KB';
+            return round($bytes / 1024, 1).' KB';
         }
-        return round($bytes / 1024 / 1024, 2) . ' MB';
+
+        return round($bytes / 1024 / 1024, 2).' MB';
     }
 
     private function formatSpeed(float $bytesPerSecond): string
     {
         if ($bytesPerSecond < 1024) {
-            return round($bytesPerSecond) . ' B/s';
+            return round($bytesPerSecond).' B/s';
         }
         if ($bytesPerSecond < 1024 * 1024) {
-            return round($bytesPerSecond / 1024, 1) . ' KB/s';
+            return round($bytesPerSecond / 1024, 1).' KB/s';
         }
-        return round($bytesPerSecond / 1024 / 1024, 2) . ' MB/s';
+
+        return round($bytesPerSecond / 1024 / 1024, 2).' MB/s';
     }
 
-    private function sanitizeLocalDir(string $remoteFilename, string $localDirOrFilename = ""): string
+    private function sanitizeLocalDir(string $remoteFilename, string $localDirOrFilename = ''): string
     {
         if ($localDirOrFilename) {
             if (str_ends_with($localDirOrFilename, '/') || !pathinfo($localDirOrFilename, PATHINFO_EXTENSION)) {
                 $downloadDir = rtrim($localDirOrFilename, '/');
             } else {
                 $downloadDir = pathinfo($localDirOrFilename, PATHINFO_DIRNAME);
-                if ($downloadDir === '.') {
+                if ('.' === $downloadDir) {
                     $downloadDir = '';
                 }
             }
@@ -275,7 +280,7 @@ final class BunnyDownloadCommand
         }
 
         if (!str_starts_with($downloadDir, '/')) {
-            $downloadDir = $this->projectDir . '/' . $downloadDir;
+            $downloadDir = $this->projectDir.'/'.$downloadDir;
         }
 
         return $downloadDir;
@@ -283,15 +288,15 @@ final class BunnyDownloadCommand
 
     private function unzip(string $zipPath, string $destination, SymfonyStyle $io): void
     {
-        $zip = new ZipArchive();
+        $zip = new \ZipArchive();
         try {
-            if ($zip->open($zipPath) === true) {
+            if (true === $zip->open($zipPath)) {
                 $zip->extractTo($destination);
                 $zip->close();
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $io->error($e->getMessage());
-            throw new Exception("Could not unzip $zipPath to $destination");
+            throw new \Exception("Could not unzip $zipPath to $destination");
         }
     }
 
@@ -299,8 +304,8 @@ final class BunnyDownloadCommand
     {
         $normalizedPath = preg_replace('#/+#', '/', $fullFilePath);
 
-        if ($fullFilePath[0] === '/') {
-            $normalizedPath = '/' . ltrim($normalizedPath, '/');
+        if ('/' === $fullFilePath[0]) {
+            $normalizedPath = '/'.ltrim($normalizedPath, '/');
         }
 
         return $normalizedPath;

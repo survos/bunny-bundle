@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Survos\BunnyBundle\Service;
 
 use Symfony\Component\HttpClient\Psr18Client;
@@ -15,20 +17,20 @@ use ToshY\BunnyNet\Model\Client\BunnyHttpClientResponseInterface;
 class BunnyService
 {
     public function __construct(
-        private CacheInterface               $cache,
+        private CacheInterface $cache,
         private readonly HttpClientInterface $httpClient,
-        private ?BunnyHttpClient             $bunnyClient = null,
-        private ?BunnyHttpClient             $baseApi = null,
-        private int                          $cacheTimeout = 0,
-        private array                        $config = [],
-        private ?BunnyHttpClient             $edgeStorageApi = null,
-        private ?string                      $storageZone = null,
-        private array                        $zones = []
+        private ?BunnyHttpClient $bunnyClient = null,
+        private ?BunnyHttpClient $baseApi = null,
+        private int $cacheTimeout = 0,
+        private array $config = [],
+        private ?BunnyHttpClient $edgeStorageApi = null,
+        private ?string $storageZone = null,
+        private array $zones = [],
     ) {
         $timeout = 60 * 60 * 15; // 15 hours
         $this->bunnyClient = new BunnyHttpClient(
             client: new Psr18Client(client: $this->httpClient)->withOptions([
-                'timeout' => $timeout
+                'timeout' => $timeout,
             ]),
             apiKey: $this->getApiKey(),
             baseUrl: Endpoint::BASE
@@ -38,7 +40,7 @@ class BunnyService
         }
         foreach ($this->config['zones'] as $zoneData) {
             if (!array_key_exists('name', $zoneData)) {
-                throw new \LogicException($this->storageZone . " is not defined in config/packages/survos_bunny.yaml");
+                throw new \LogicException($this->storageZone.' is not defined in config/packages/survos_bunny.yaml');
             }
             $this->zones[$zoneData['name']] = $zoneData;
         }
@@ -93,19 +95,20 @@ class BunnyService
      * Download a file with progress callback support for large files.
      * Uses Symfony HttpClient directly to support on_progress callback.
      *
-     * @param string $filename The filename to download
-     * @param string $path The path within the storage zone
-     * @param callable|null $onProgress Callback: function(int $dlNow, int $dlSize, array $info): void
-     * @param string|null $storageZone The storage zone name (uses default if null)
-     * @param string|null $outputPath If provided, streams directly to file (memory efficient)
+     * @param string        $filename    The filename to download
+     * @param string        $path        The path within the storage zone
+     * @param callable|null $onProgress  Callback: function(int $dlNow, int $dlSize, array $info): void
+     * @param string|null   $storageZone The storage zone name (uses default if null)
+     * @param string|null   $outputPath  If provided, streams directly to file (memory efficient)
+     *
      * @return string The file contents (if no outputPath) or the output path
      */
     public function downloadFileWithProgress(
-        string    $filename,
-        string    $path,
+        string $filename,
+        string $path,
         ?callable $onProgress = null,
-        ?string   $storageZone = null,
-        ?string   $outputPath = null
+        ?string $storageZone = null,
+        ?string $outputPath = null,
     ): string {
         $storageZone = $storageZone ?? $this->getStorageZone();
         $password = $this->zones[$storageZone]['readonly_password'] ?? null;
@@ -119,11 +122,11 @@ class BunnyService
         $baseUrl = Endpoint::EDGE_STORAGE_NY;
         // Ensure we have the scheme
         if (!str_starts_with($baseUrl, 'http')) {
-            $baseUrl = 'https://' . $baseUrl;
+            $baseUrl = 'https://'.$baseUrl;
         }
         $baseUrl = rtrim($baseUrl, '/');
         $cleanPath = trim($path, '/');
-        $url = $baseUrl . '/' . $storageZone . '/' . ($cleanPath ? $cleanPath . '/' : '') . $filename;
+        $url = $baseUrl.'/'.$storageZone.'/'.($cleanPath ? $cleanPath.'/' : '').$filename;
 
         $options = [
             'headers' => [
@@ -140,7 +143,7 @@ class BunnyService
         if ($outputPath) {
             // Stream to file - memory efficient for large files
             $fileHandle = fopen($outputPath, 'wb');
-            if ($fileHandle === false) {
+            if (false === $fileHandle) {
                 throw new \RuntimeException("Cannot open file for writing: $outputPath");
             }
 
@@ -161,8 +164,9 @@ class BunnyService
     /**
      * List files in a directory on Bunny storage.
      *
-     * @param string $path The path to list
+     * @param string      $path        The path to list
      * @param string|null $storageZone The storage zone name
+     *
      * @return array List of files/directories
      */
     public function listFiles(string $path = '', ?string $storageZone = null): array
@@ -182,21 +186,22 @@ class BunnyService
     /**
      * Sync/download a directory recursively from Bunny storage.
      *
-     * @param string $remotePath The remote directory path
-     * @param string $localPath The local directory to download to
+     * @param string        $remotePath     The remote directory path
+     * @param string        $localPath      The local directory to download to
      * @param callable|null $onFileProgress Progress callback for each file
-     * @param callable|null $onFileStart Called when starting a new file: function(string $filename, int $index, int $total): void
-     * @param string|null $storageZone The storage zone name
-     * @param bool $force Download even if file exists locally
+     * @param callable|null $onFileStart    Called when starting a new file: function(string $filename, int $index, int $total): void
+     * @param string|null   $storageZone    The storage zone name
+     * @param bool          $force          Download even if file exists locally
+     *
      * @return array List of downloaded files
      */
     public function syncDirectory(
-        string    $remotePath,
-        string    $localPath,
+        string $remotePath,
+        string $localPath,
         ?callable $onFileProgress = null,
         ?callable $onFileStart = null,
-        ?string   $storageZone = null,
-        bool      $force = false
+        ?string $storageZone = null,
+        bool $force = false,
     ): array {
         $storageZone = $storageZone ?? $this->getStorageZone();
         $files = $this->listFiles($remotePath, $storageZone);
@@ -210,8 +215,8 @@ class BunnyService
         foreach ($files as $index => $file) {
             $isDirectory = $file['IsDirectory'] ?? false;
             $fileName = $file['ObjectName'] ?? '';
-            $remoteFull = rtrim($remotePath, '/') . '/' . $fileName;
-            $localFull = rtrim($localPath, '/') . '/' . $fileName;
+            $remoteFull = rtrim($remotePath, '/').'/'.$fileName;
+            $localFull = rtrim($localPath, '/').'/'.$fileName;
 
             if ($isDirectory) {
                 // Recursively sync subdirectories
@@ -250,10 +255,10 @@ class BunnyService
 
     public function uploadFile(
         string $fileName,
-        mixed  $body,
+        mixed $body,
         ?string $storageZoneName = null,
         string $path = '',
-        array  $headers = [],
+        array $headers = [],
     ): BunnyHttpClientResponseInterface {
         $ret = $this->getEdgeApi(writeAccess: true)->request(
             new UploadFile(
@@ -264,10 +269,11 @@ class BunnyService
                 $headers,
             )
         );
+
         return $ret;
     }
 
-    public function getEdgeApi(string|null $storageZone = null, bool $writeAccess = false): BunnyHttpClient
+    public function getEdgeApi(?string $storageZone = null, bool $writeAccess = false): BunnyHttpClient
     {
         if (!$storageZone = $storageZone ?? $this->getStorageZone()) {
             if (!$storageZone = $this->config['storage_zone']) {
@@ -276,7 +282,7 @@ class BunnyService
                 }
             }
         }
-        assert($storageZone, "Missing storageZone!");
+        assert($storageZone, 'Missing storageZone!');
 
         if (!$this->edgeStorageApi) {
             $password = $this->zones[$storageZone][$passwordType = ($writeAccess ? 'password' : 'readonly_password')] ?? null;
@@ -312,6 +318,7 @@ class BunnyService
     public function setCacheTimeout(int $cacheTimeout): BunnyService
     {
         $this->cacheTimeout = $cacheTimeout;
+
         return $this;
     }
 
@@ -323,6 +330,7 @@ class BunnyService
     public function setCache(CacheInterface $cache): BunnyService
     {
         $this->cache = $cache;
+
         return $this;
     }
 

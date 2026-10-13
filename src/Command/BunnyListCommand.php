@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Survos\BunnyBundle\Command;
 
 use Knp\Bundle\TimeBundle\DateTimeFormatter;
@@ -19,7 +21,7 @@ final class BunnyListCommand
 {
     public function __construct(
         private readonly BunnyService $bunnyService,
-        private readonly ?DateTimeFormatter $dateTimeFormatter = null
+        private readonly ?DateTimeFormatter $dateTimeFormatter = null,
     ) {
     }
 
@@ -40,7 +42,8 @@ final class BunnyListCommand
     {
         $baseApi = $this->bunnyService->getBaseApi();
         if (!$baseApi) {
-            $io->error("Listing zones requires a base api key");
+            $io->error('Listing zones requires a base api key');
+
             return Command::FAILURE;
         }
 
@@ -61,6 +64,7 @@ final class BunnyListCommand
         }
 
         $table->render();
+
         return Command::SUCCESS;
     }
 
@@ -76,6 +80,7 @@ final class BunnyListCommand
 
         if (empty($list)) {
             $io->warning("No files found in $zoneName/$path");
+
             return Command::SUCCESS;
         }
 
@@ -114,11 +119,12 @@ final class BunnyListCommand
 
         $zoneNames = $this->bunnyService->getZoneNames();
         if (empty($zoneNames)) {
-            $io->error("No zones configured. Add zones to survos_bunny.yaml");
+            $io->error('No zones configured. Add zones to survos_bunny.yaml');
+
             return null;
         }
 
-        if (count($zoneNames) === 1) {
+        if (1 === count($zoneNames)) {
             return $zoneNames[0];
         }
 

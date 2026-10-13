@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Survos\BunnyBundle\Twig;
 
 use Twig\Extension\AbstractExtension;
@@ -9,8 +11,7 @@ use Twig\TwigFunction;
 class TwigExtension extends AbstractExtension
 {
     public function __construct(
-    )
-    {
+    ) {
     }
 
     public function getFilters(): array

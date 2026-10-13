@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 /** generated from /home/tac/g/survos/survos/vendor/survos/maker-bundle/templates/skeleton/bundle/src/Bundle.tpl.php */
 
 namespace Survos\BunnyBundle;
 
 use Survos\BunnyBundle\Command\BunnyConfigCommand;
-use Survos\BunnyBundle\Command\BunnyListCommand;
 use Survos\BunnyBundle\Command\BunnyDownloadCommand;
+use Survos\BunnyBundle\Command\BunnyListCommand;
 use Survos\BunnyBundle\Command\BunnyUploadCommand;
 use Survos\BunnyBundle\Controller\BunnyController;
 use Survos\BunnyBundle\Service\BunnyService;
@@ -15,9 +17,7 @@ use Survos\SimpleDatatables\SurvosSimpleDatatablesBundle;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Configurator\DefinitionConfigurator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
-use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\HttpKernel\Bundle\AbstractBundle;
 use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
 
@@ -25,7 +25,7 @@ class SurvosBunnyBundle extends AbstractBundle
 {
     public function configureRoutes(RoutingConfigurator $routes): void
     {
-        $routes->import(dirname(__DIR__) . '/src/Controller/', 'attribute');
+        $routes->import(dirname(__DIR__).'/src/Controller/', 'attribute');
     }
 
     public function loadExtension(array $config, ContainerConfigurator $container, ContainerBuilder $builder): void
@@ -77,7 +77,6 @@ class SurvosBunnyBundle extends AbstractBundle
             ->end()
             ->end()
             ->end();
-
     }
 
     public function configure(DefinitionConfigurator $definition): void
@@ -94,5 +93,4 @@ class SurvosBunnyBundle extends AbstractBundle
 
         $this->addZonesSection($rootNode);
     }
-
 }
